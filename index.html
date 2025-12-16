@@ -7,7 +7,6 @@
     <title>cat</title>
 
     <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/128/9513/9513911.png">
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" ></script>
     <style>
@@ -20,40 +19,47 @@
 <body>
     <div id="map"></div>
     
-	
 <script>
 // Define a basemap
 const OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	maxZoom: 19,
 	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 });
-// Create a map object with the basemap, center and zoom.
+
 const map = L.map('map',{
     layers: OpenStreetMap_Mapnik,
     center: [ 49, 17 ],
     zoom: 6,
 });
 
-// Define variable for later use.
 let trees;
 let appsscriptUrl = "https://script.google.com/macros/s/AKfycbxVpWt82-oN19G09zBDPMc7_8WnMuJJ0fVt4SU9NKGkLe9avwrTbweC6w-9VBrQ9R53/exec"
-       
 
+// --- CHANGE ICON SETTINGS HERE ---
+const myCustomIcon = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/128/9513/9513911.png', // <--- PASTE YOUR IMAGE URL HERE
+    iconSize: [40, 40], // Size of the icon [width, height]
+    iconAnchor: [20, 40], // Point of the icon which will correspond to marker's location (usually middle-bottom)
+    popupAnchor: [0, -40] // Point from which the popup should open relative to the iconAnchor
+});
+// --------------------------------
 
 function reloadLayer(){
-    // Perform a HTTP GET request, which should return our GeoJson.
     fetch(appsscriptUrl)
     .then(response => response.json())
     .then(data => {
-        // If the map has the trees layer, remove it.
         if(map.hasLayer(trees)){
             map.removeLayer(trees)
         }
-        // Redefine the trees layer, and add to the map.
+        
         trees = L.geoJson(data,{
+            // THIS SECTION BELOW TELLS LEAFLET TO USE YOUR IMAGE
+            pointToLayer: function (feature, latlng) {
+                return L.marker(latlng, {icon: myCustomIcon});
+            },
             onEachFeature: function(feature, layer){
                 if (feature.properties && feature.properties.type) {
-                    layer.bindPopup("Tree Type: " +feature.properties.type);
+                    layer.bindPopup("Tree Type: " + feature.properties.type);
                 }
             }
         })
@@ -61,16 +67,7 @@ function reloadLayer(){
     }) 
 }
 
-
-// Load the layer for the first time
 reloadLayer()
-
-
-
 </script>
-    
 </body>
-
 </html>
-
-
